@@ -2,23 +2,18 @@ import csv
 import os
 from groq import Groq
 
-# 1. Connection settings (Paste your BRAND NEW key below)
-API_KEY = "PASTE KEY"
+API_KEY = os.environ.get("GROQ_API_KEY", "YOUR_GROQ_API_KEY_HERE")
 client = Groq(api_key=API_KEY)
 
-# 2. Explicit folder location setup for your project folder
-csv_file = r"C:\Users\Lenovo\Desktop\DEVELOPMENT PROJECTS\local_leads.csv"
+csv_file = "local_leads.csv"
 
-
-# Automatically create the file and add headers if it doesn't exist yet
 if not os.path.exists(csv_file):
     with open(csv_file, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
+        writer = csv.writer(file, delimiter=";")
         writer.writerow(["Name", "Platform", "Product Interest", "Budget", "Draft Reply"])
 
 print("Initialized Successfully! (Type 'exit' to close)\n")
 
-# 3. Execution loop
 while True:
     print("-" * 50)
     messy_chat = input("Paste your raw customer chat/comment here: ")
@@ -31,9 +26,8 @@ while True:
         continue
 
     try:
-        # 4. Prompt optimized to return comma-separated text for spreadsheets
         completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[
                 {
                     "role": "system",
@@ -47,7 +41,6 @@ while True:
         raw_output = completion.choices[0].message.content.strip()
         print(f"\nParsed Payload Output: {raw_output}")
         
-        # 5. Split text line at commas and append row to file
         parsed_row = [item.strip() for item in raw_output.split(",", 4)]
         
         with open(csv_file, mode="a", newline="", encoding="utf-8") as file:
